@@ -5,17 +5,23 @@ import (
 	"log"
 	"os"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	_ "github.com/viteant/stockinsight/docs"
+	"github.com/viteant/stockinsight/internal/api"
 	"github.com/viteant/stockinsight/internal/db"
 	"github.com/viteant/stockinsight/internal/db/seeds/finances"
 	"github.com/viteant/stockinsight/internal/db/seeds/stocks"
-	"github.com/viteant/stockinsight/internal/finance/infrastructure/repository"
-	"github.com/viteant/stockinsight/internal/finance/infrastructure/scraper"
-	usecases "github.com/viteant/stockinsight/internal/finance/use-cases"
-	"github.com/viteant/stockinsight/internal/stock/interfaces"
+	financeinterfaces "github.com/viteant/stockinsight/internal/finance/interfaces"
+	stockinterfaces "github.com/viteant/stockinsight/internal/stock/interfaces"
 )
 
+// @title StockInsight API
+// @version 1.0
+// @description API de acciones y recomendaciones
+// @BasePath /api
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -95,13 +101,22 @@ func migrate(reset bool, databaseURL string) {
 }
 
 func startServer() {
-	log.Println("🚀 Iniciando servidor...")
-	// Aquí levantarás tu API más adelante
+	log.Println("🚀 Iniciando servidor en http://localhost:8080")
+
+	dbConn := db.NewCockroachDB()
+	defer dbConn.Close()
+
+	app := fiber.New()
+
+	api.RegisterRoutes(app, dbConn)
+	app.Get("/swagger/*", swagger.HandlerDefault)
+
+	log.Fatal(app.Listen(":8080"))
 }
 
 func syncData() {
 	log.Println("🔄 Sincronizando datos de stocks con la API...")
-	interfaces.RunStockSync()
+	stockinterfaces.RunStockSync()
 	log.Println("🔄 Sincronización de stocks completada.")
 }
 
@@ -152,15 +167,5 @@ func importData(path string, table string) {
 }
 
 func updateFinance() {
-	dataBase := db.NewCockroachDB()
-
-	useCase := usecases.NewUpdateFinanceDataUseCase(
-		repository.NewCockroachStockRepository(dataBase),
-		repository.NewCockroachFinanceRepository(dataBase),
-		scraper.NewYahooFinanceScraper(),
-	)
-
-	if err := useCase.Execute(); err != nil {
-		log.Fatalf("Error ejecutando UpdateFinanceDataUseCase: %v", err)
-	}
+	financeinterfaces.SyncFinanceHandler()
 }

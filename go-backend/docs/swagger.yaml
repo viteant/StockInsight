@@ -1,0 +1,103 @@
+basePath: /api
+definitions:
+  domain.StockRecommendation:
+    properties:
+      action:
+        type: string
+      brokerage:
+        type: string
+      company:
+        type: string
+      normalize_rating_from:
+        type: string
+      normalize_rating_to:
+        type: string
+      ticker:
+        type: string
+      weight_score:
+        type: number
+    type: object
+info:
+  contact: {}
+  description: API de acciones y recomendaciones
+  title: StockInsight API
+  version: "1.0"
+paths:
+  /api/recommendations:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve una lista con 10 acciones recomendadas para comprar, mantener
+        y vender, basadas en la puntuación de los brokers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.StockRecommendation'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Recomendaciones de acciones
+      tags:
+      - Recommendations
+  /api/stocks:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve acciones con paginación y filtros
+      parameters:
+      - description: Número de página
+        in: query
+        name: page
+        type: integer
+      - description: Cantidad por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtra por ticker (ILIKE)
+        in: query
+        name: ticker
+        type: string
+      - description: Filtra por nombre de empresa (ILIKE)
+        in: query
+        name: company
+        type: string
+      - description: Filtra por brokerage (ILIKE)
+        in: query
+        name: brokerage
+        type: string
+      - description: Filtra por target_from mínimo
+        in: query
+        name: target_from_min
+        type: number
+      - description: Filtra por target_from máximo
+        in: query
+        name: target_from_max
+        type: number
+      - description: Fecha mínima (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: Fecha máxima (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Lista de acciones
+      tags:
+      - Stocks
+swagger: "2.0"

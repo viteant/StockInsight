@@ -14,7 +14,7 @@ Este proyecto es el backend de StockInsight, desarrollado en Go y utilizando una
 
    ```sh
    git clone https://github.com/tu-usuario/StockInsight.git
-   cd StockInsight/backend
+   cd StockInsight/go-backend
    ```
 2. **Configura el entorno:**
 
@@ -142,6 +142,94 @@ go run cmd/main.go --import=internal/db/seeds/finances_seed.json --table="financ
 
 ---
 
+## Endpoints disponibles
+
+El servidor expone los siguientes endpoints REST bajo el path base `/api`:
+
+### `GET /api/stocks`
+
+Obtiene una lista paginada de acciones.
+
+**Parámetros de consulta disponibles:**
+
+- `page`: número de página (por defecto: 1)
+- `limit`: cantidad por página (por defecto: 20)
+- `ticker`: filtra por símbolo (ILIKE)
+- `company`: filtra por nombre de empresa (ILIKE)
+- `brokerage`: filtra por nombre del bróker (ILIKE)
+- `target_from_min`: valor mínimo para target_from
+- `target_from_max`: valor máximo para target_from
+- `target_to_min`: valor mínimo para target_to
+- `target_to_max`: valor máximo para target_to
+- `date_from`: fecha mínima de creación (`YYYY-MM-DD`)
+- `date_to`: fecha máxima de creación (`YYYY-MM-DD`)
+- `orderBy`: campo por el cual ordenar (`ticker`, `company`, `created_at`, etc.)
+- `orderDir`: dirección del orden (`asc` o `desc`)
+
+### `GET /api/recommendations`
+
+Obtiene una lista de recomendaciones agrupadas por tipo (`buy`, `hold`, `sell`) basada en el puntaje (`weight_score`) de los brokers.
+
+---
+
+## Documentación Swagger (OpenAPI)
+
+Este proyecto incluye documentación autogenerada con [Swaggo](https://github.com/swaggo/swag).
+
+### 📦 Instalación de Swaggo
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+Agrega `$GOPATH/bin` a tu `PATH` si no puedes ejecutar `swag`.
+
+### 📄 Generar la documentación
+
+Ejecuta en la raíz del proyecto:
+
+```bash
+swag init --dir ./cmd,./internal --output ./docs
+```
+
+Esto escaneará los comentarios de tus handlers y generará los archivos `docs/swagger.json` y `docs/swagger.yaml`.
+
+### 🔍 Ver documentación
+
+Una vez que corras el servidor (`--serve`), abre en el navegador:
+
+```
+http://localhost:3000/swagger/index.html
+```
+
+## Testing
+
+### 🧪 Pruebas E2E
+
+El proyecto incluye pruebas de extremo a extremo para validar el comportamiento real de la API, incluyendo validación de filtros dinámicos.
+
+Ejemplo:
+
+```go
+func TestGetStocksE2E_WithDynamicFilters(t *testing.T)
+```
+
+Este test:
+
+- Consulta `GET /api/stocks?limit=5`
+- Usa el primer resultado como base
+- Realiza una segunda consulta aplicando filtros con esos datos
+- Valida que los filtros hayan sido aplicados correctamente
+
+Para ejecutar las pruebas:
+
+```bash
+go test ./tests -v
+```
+
+Asegúrate de tener una base de datos con datos válidos antes de ejecutar.
+
+
 ## Estructura del proyecto
 
 - `cmd/main.go`: Punto de entrada de la aplicación.
@@ -161,4 +249,10 @@ go run cmd/main.go --import=internal/db/seeds/finances_seed.json --table="financ
 ## Licencia
 
 MIT
-```
+
+## Autor
+**Vicente Chiriguaya M.**
+[LinkedIn](https://www.linkedin.com/in/vchiriguaya) | [GitHub](https://github.com/viteant)  
+Arquitecto de software disfrazado de full stack. Me obsesiona que las cosas funcionen, pero también que tengan sentido. Trabajo entre diseño de sistemas, automatización e inteligencia artificial, con preferencia por stacks limpios, estructuras predecibles y código que no sorprenda... salvo para bien.
+
+
