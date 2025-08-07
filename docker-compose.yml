@@ -1,0 +1,14 @@
+services:
+  cockroach:
+    image: cockroachdb/cockroach:latest # Puedes actualizar esta versión si hay una más reciente
+    container_name: cockroach
+    command: start-single-node --insecure
+    ports:
+      - "26257:26257"  # Puerto para conexiones de clientes SQL
+      - "9000:8080"    # Puerto para la consola web de administración
+    volumes:
+      - cockroach-data:/cockroach/cockroach-data
+    restart: unless-stopped
+
+volumes:
+  cockroach-data:

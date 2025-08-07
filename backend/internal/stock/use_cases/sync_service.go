@@ -2,6 +2,8 @@ package use_cases
 
 import (
 	"log"
+	"os"
+	"time"
 
 	"github.com/viteant/stockinsight/internal/stock/domain"
 )
@@ -28,6 +30,7 @@ func NewSyncService(fetcher StockFetcher, repo StockSaver) *SyncService {
 
 func (s *SyncService) Sync() error {
 	next := ""
+	env := os.Getenv("ENVIRONMENT")
 
 	for {
 		stocks, nextPage, err := s.Fetcher.FetchPage(next)
@@ -45,6 +48,11 @@ func (s *SyncService) Sync() error {
 			break
 		}
 		next = nextPage
+
+		if env == "dev" {
+			time.Sleep(500 * time.Millisecond)
+		}
+
 	}
 
 	log.Println("Sincronización completada")

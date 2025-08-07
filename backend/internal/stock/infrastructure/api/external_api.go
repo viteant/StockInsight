@@ -74,15 +74,17 @@ func (c *ExternalAPIClient) FetchPage(nextPage string) ([]domain.Stock, string, 
 		fmt.Sscanf(strings.Replace(item.TargetTo, "$", "", 1), "%f", &tt)
 
 		result = append(result, domain.Stock{
-			Ticker:     item.Ticker,
-			Company:    item.Company,
-			Brokerage:  item.Brokerage,
-			Action:     item.Action,
-			RatingFrom: item.RatingFrom,
-			RatingTo:   item.RatingTo,
-			TargetFrom: tf,
-			TargetTo:   tt,
-			ReportedAt: reportedAt,
+			Ticker:               item.Ticker,
+			Company:              item.Company,
+			Brokerage:            item.Brokerage,
+			Action:               item.Action,
+			RatingFrom:           item.RatingFrom,
+			RatingTo:             item.RatingTo,
+			NormalizedRatingFrom: domain.NormalizeBrokerRating(item.RatingFrom),
+			NormalizedRatingTo:   domain.NormalizeBrokerRating(item.RatingTo),
+			TargetFrom:           tf,
+			TargetTo:             tt,
+			ReportedAt:           reportedAt,
 		})
 	}
 

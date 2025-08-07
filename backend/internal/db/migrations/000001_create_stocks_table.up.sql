@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS stocks (
     action STRING NOT NULL,
     rating_from STRING,
     rating_to STRING,
+    normalize_rating_from STRING,
+    normalize_rating_to STRING,
     target_from DECIMAL(10,2),
     target_to DECIMAL(10,2),
     created_at TIMESTAMPTZ DEFAULT now()
