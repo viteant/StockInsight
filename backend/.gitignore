@@ -6,6 +6,7 @@
 *.dylib
 *.test
 *.out
+.env
 
 # Output of the go coverage tool
 *.coverprofile
@@ -46,3 +47,4 @@ Thumbs.db
 # Temporary
 tmp/
 temp/
+
