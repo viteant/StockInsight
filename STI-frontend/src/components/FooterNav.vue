@@ -2,9 +2,9 @@
 </script>
 
 <template>
-  <footer class="gradient-footer h-[30px] fixed z-50 w-full bottom-0">
-    <div class="container mx-auto flex items-center justify-between h-full">
-      <p class="text-white font-light text-sm">Created By: Vicente Chiriguaya</p>
+  <footer class="min-[1354px]:fixed bottom-0 z-50 w-full px-2">
+    <div class="max-w-[1920px] mx-auto flex items-center justify-between h-full px-5">
+      <p class="text-white font-medium text-sm">Created By: Vicente Chiriguaya</p>
     </div>
   </footer>
 </template>

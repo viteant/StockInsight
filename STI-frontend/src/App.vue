@@ -5,7 +5,7 @@ import FooterNav from '@/components/FooterNav.vue'
 
 <template>
   <NavBar/>
-  <div class="pt-[60px] pb-[30px] min-h-screen bg-neutral-50">
+  <div class="">
     <RouterView/>
   </div>
   <FooterNav/>
