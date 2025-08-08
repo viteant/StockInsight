@@ -219,6 +219,103 @@ Ejemplo de archivo `.env`:
 VITE_API_URL=http://localhost:8080
 ```
 
+# Análisis de predicciones por bróker (vistas SQL)
+
+Esta sección documenta el **núcleo del análisis** usado para evaluar objetivamente a los brókers a partir de sus predicciones históricas. Todo el análisis se realiza en **CockroachDB** mediante dos vistas: `broker_predictions` y `broker_evaluation`. El backend (Golang) consulta estas vistas y la UI (Vue 3 + TypeScript + Pinia + Tailwind, **Composition API** con `<script setup>`) presenta los resultados.
+
+---
+
+## Vistas creadas
+
+### 1) `broker_predictions`
+Evalúa cada predicción registrada en `stocks` contra el **cierre real más cercano** disponible en `finances` (por `ticker`) y calcula métricas por predicción:
+
+- `prediction_date`: fecha de la predicción (`stocks.created_at`).
+- `actual_price`: cierre real más cercano (`finances.close` via *LATERAL JOIN* por proximidad de fecha).
+- `prediction_direction`: dirección esperada según `target_from` → `target_to` (`up`, `down`, `neutral`).
+- `is_correct`: 1 si la dirección real del precio coincide con la dirección prevista, 0 en caso contrario.
+- `error_percentage`: |`target_to` − `actual_price`| / `actual_price` * 100 (redondeado a 2 decimales).
+
+> Nota: la vista filtra predicciones sin `target_to` y tolera faltantes de `target_from`/`actual_price` dejando valores nulos donde corresponde.
+
+**Consulta típica:**
+
+```sql
+-- Predicciones evaluadas (con dirección, acierto y error)
+SELECT *
+FROM broker_predictions
+WHERE prediction_date >= '2025-01-01'
+ORDER BY prediction_date DESC;
+```
+
+### 2) `broker_evaluation`
+Agrega las predicciones evaluadas por `brokerage` y genera una métrica compuesta:
+
+- `total_predictions`: total de predicciones evaluadas por bróker.
+- `total_hits`: cantidad de aciertos (dirección correcta).
+- `accuracy`: % de acierto (con dos decimales).
+- `weight_score`: señal compuesta que pondera **precisión** y **volumen** de aciertos:
+  
+  ```
+  weight_score = total_hits * (accuracy / 100)
+  ```
+
+Esta métrica es útil para ponderar la “confiabilidad histórica” del bróker en algoritmos de ranking/recomendación.
+
+**Consulta típica:**
+
+```sql
+-- Mejores brókers por peso histórico (precisión * volumen)
+SELECT *
+FROM broker_evaluation
+ORDER BY weight_score DESC
+LIMIT 10;
+```
+
+---
+
+## Cómo se usa desde el backend (Go)
+
+1. **Leer calidad del bróker**: consultar `broker_evaluation` para obtener `accuracy` y `weight_score` por `brokerage`.
+2. **Cruzar con predicciones recientes**: consultar `broker_predictions` filtrando por ventana de fechas deseada.
+3. **Componer un score final** (en Go) si se requiere un ranking para “hoy”:
+   - Por ejemplo: combinar `weight_score` del bróker con señales actuales (p. ej., *upside* calculado contra el último `close` disponible) y ordenarlo descendentemente.
+4. **Exponer por API**: endpoint REST del backend entrega las filas ordenadas y los campos explicativos (accuracy, total_hits, error_percentage).
+
+> Las vistas están diseñadas para ser **explicables** y **auditables**: cada recomendación puede rastrearse hasta las métricas calculadas por predicción y por bróker.
+
+---
+
+## Ejemplos de consultas útiles
+
+```sql
+-- 1) Ver el historial del error porcentual por bróker y ticker
+SELECT brokerage, ticker, prediction_date, error_percentage
+FROM broker_predictions
+WHERE brokerage = 'Morgan Stanley'
+ORDER BY prediction_date DESC;
+
+-- 2) Top brókers por precisión (no sólo por weight_score)
+SELECT brokerage, total_predictions, total_hits, accuracy
+FROM broker_evaluation
+ORDER BY accuracy DESC, total_predictions DESC
+LIMIT 10;
+
+-- 3) Filtrar predicciones recientes (últimos 30 días)
+SELECT *
+FROM broker_predictions
+WHERE prediction_date >= current_date - INTERVAL '30 days'
+ORDER BY prediction_date DESC;
+```
+
+---
+
+## Notas y consideraciones
+
+- El emparejamiento con precios usa el **cierre más cercano en fecha** para robustez ante huecos de calendario.
+- `weight_score` es **simple y transparente**; puede sustituirse o complementarse con otras métricas si el producto lo requiere a futuro.
+- Toda la lógica de evaluación vive en SQL, lo que facilita su **mantenimiento**, **auditoría** y **performance** para el backend.
+
 ## Licencia
 
 MIT
