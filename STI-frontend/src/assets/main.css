@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-serif: "Sansation", serif, ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+
+@layer base {
+  .gradient-navbar{
+    @apply bg-gradient-to-r from-[#61e39c] to-[#1f9fb8]
+  }
+  .gradient-footer{
+    @apply bg-gradient-to-r from-[#5a5bf3] to-[#91e7d9]
+  }
+}
