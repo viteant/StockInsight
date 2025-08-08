@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -107,6 +108,12 @@ func startServer() {
 	defer dbConn.Close()
 
 	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:  "*",
+		AllowMethods:  "GET",
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
+		ExposeHeaders: "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
+	}))
 
 	api.RegisterRoutes(app, dbConn)
 	app.Get("/swagger/*", swagger.HandlerDefault)

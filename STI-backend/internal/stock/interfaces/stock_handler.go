@@ -45,6 +45,8 @@ func (h *StockHandler) GetRecommendations(c *fiber.Ctx) error {
 // @Produce json
 // @Param page query int false "Número de página"
 // @Param limit query int false "Cantidad por página"
+// @Param orderBy query string false "Columna para ordenar (default: ID)"
+// @Param orderDir query string false "Dirección de orden (asc o desc, default": asc)"
 // @Param ticker query string false "Filtra por ticker (ILIKE)"
 // @Param company query string false "Filtra por nombre de empresa (ILIKE)"
 // @Param brokerage query string false "Filtra por brokerage (ILIKE)"
@@ -58,11 +60,12 @@ func (h *StockHandler) GetStocks(c *fiber.Ctx) error {
 	// Defaults
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	limit, _ := strconv.Atoi(c.Query("limit", "20"))
-	orderBy := c.Query("orderBy", "created_at")
-	orderDir := c.Query("orderDir", "desc")
+	orderBy := c.Query("orderBy", "ID")
+	orderDir := c.Query("orderDir", "asc")
 
 	// Filtros soportados
 	filters := map[string]string{
+		"id":              c.Query("id"),
 		"ticker":          c.Query("ticker"),
 		"company":         c.Query("company"),
 		"brokerage":       c.Query("brokerage"),

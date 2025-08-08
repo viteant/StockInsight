@@ -67,10 +67,13 @@ func (r *PersistenceStockRepository) FetchRecommendations() ([]domain.StockRecom
 	query := `
 		(
 			SELECT
+			    s.id,
 				s.ticker,
 				s.company,
 				s.brokerage,
 				s.action,
+				s.target_from,
+				s.target_to,
 				s.normalize_rating_from,
 				s.normalize_rating_to,
 				b.weight_score
@@ -83,10 +86,13 @@ func (r *PersistenceStockRepository) FetchRecommendations() ([]domain.StockRecom
 		UNION ALL
 		(
 			SELECT
+			    s.id,
 				s.ticker,
 				s.company,
 				s.brokerage,
 				s.action,
+				s.target_from,
+				s.target_to,
 				s.normalize_rating_from,
 				s.normalize_rating_to,
 				b.weight_score
@@ -99,10 +105,13 @@ func (r *PersistenceStockRepository) FetchRecommendations() ([]domain.StockRecom
 		UNION ALL
 		(
 			SELECT
+			    s.id,
 				s.ticker,
 				s.company,
 				s.brokerage,
 				s.action,
+				s.target_from,
+				s.target_to,
 				s.normalize_rating_from,
 				s.normalize_rating_to,
 				b.weight_score
@@ -124,10 +133,13 @@ func (r *PersistenceStockRepository) FetchRecommendations() ([]domain.StockRecom
 	for rows.Next() {
 		var r domain.StockRecommendation
 		if err := rows.Scan(
+			&r.ID,
 			&r.Ticker,
 			&r.Company,
 			&r.Brokerage,
 			&r.Action,
+			&r.TargetFrom,
+			&r.TargetTo,
 			&r.NormalizeRatingFrom,
 			&r.NormalizeRatingTo,
 			&r.WeightScore,
@@ -151,7 +163,13 @@ func (r *PersistenceStockRepository) FetchAllStocks(
 		"created_at":  true,
 		"target_to":   true,
 		"target_from": true,
+		"rating_to":   true,
+		"rating_from": true,
+		"action":      true,
 		"ticker":      true,
+		"company":     true,
+		"brokerage":   true,
+		"id":          true,
 	}
 
 	if !allowedOrderFields[orderBy] {
@@ -182,6 +200,7 @@ func (r *PersistenceStockRepository) FetchAllStocks(
 		"target_to_max":   "target_to <= $%d",
 		"date_from":       "created_at >= $%d",
 		"date_to":         "created_at <= $%d",
+		"id":              "id = $%d",
 	} {
 		if val, ok := filters[key]; ok && val != "" {
 			whereClauses = append(whereClauses, fmt.Sprintf(column, argIndex))

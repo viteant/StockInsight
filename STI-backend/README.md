@@ -18,7 +18,7 @@ Este proyecto es el backend de StockInsight, desarrollado en Go y utilizando una
    ```
 2. **Configura el entorno:**
 
-Antes de iniciar la aplicación, asegúrate de configurar las siguientes variables de entorno en el archivo `.env` dentro de la carpeta `backend`:
+Antes de iniciar la aplicación, asegúrate de configurar las siguientes variables de entorno en el archivo `.env` dentro de la carpeta `STI-backend`:
 
 - `ENVIRONMENT`: Entorno de ejecución, puede ser `env` o `prod`.
 - `DATABASE_URI`: URI de conexión a la base de datos (ejemplo: `root:@localhost:26257/stockinsights?sslmode=disable`)
